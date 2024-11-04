@@ -1,5 +1,7 @@
 from playwright.sync_api import sync_playwright
 import requests
+from time import sleep  # Add this import at the top
+
 
 def solve_captcha(question):
         print(f'Solving captcha: {question}')
@@ -11,7 +13,7 @@ def solve_captcha(question):
                 "messages": [
                     {
                         "role": "user",
-                        "content": f'{question} - answer as short as you can, only year, if able'
+                        "content": f'{question} - answer should be only year of the mentioned event'
                     }
                 ]
             }
@@ -25,7 +27,7 @@ def login_with_captcha():
     try:
         with sync_playwright() as p:
             browser = p.chromium.launch(
-                headless=True  # set to True in production
+                headless=False  # set to True in production
             )
             page = browser.new_page()
             page.goto('https://xyz.ag3nts.org/')
@@ -48,7 +50,12 @@ def login_with_captcha():
             page.fill('input[name="answer"]', answer)
             
             page.click('button[type="submit"]')
-                        
+            
+            # Wait for and get the h2 title after login
+            title_element = page.wait_for_selector('h2')
+            title_text = title_element.text_content()
+            print(f'Found title: {title_text}')
+                                    
             # Submit
             browser.close()
     except Exception as error:
