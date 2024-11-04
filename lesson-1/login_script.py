@@ -46,7 +46,9 @@ def login_with_captcha():
             page.fill('input[name="username"]', 'tester')
             page.fill('input[name="password"]', '574e112a')
             page.fill('input[name="answer"]', answer)
-
+            
+            page.click('button[type="submit"]')
+                        
             # Submit
             browser.close()
     except Exception as error:
