@@ -13,7 +13,7 @@ def solve_captcha(question):
                 "messages": [
                     {
                         "role": "user",
-                        "content": f'{question} - answer should be only year of the mentioned event'
+                        "content": f'{question} - answer should be only year of the mentioned event, do not add dot in the end nor any other characters'
                     }
                 ]
             }
@@ -55,9 +55,9 @@ def login_with_captcha():
             title_element = page.wait_for_selector('h2')
             title_text = title_element.text_content()
             print(f'Found title: {title_text}')
-                                    
+                                                
             # Submit
-            browser.close()
+            # browser.close()
     except Exception as error:
         print('Error logging in:', error)
 
