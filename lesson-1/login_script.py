@@ -1,6 +1,6 @@
 from playwright.sync_api import sync_playwright
 import requests
-from time import sleep  # Add this import at the top
+import os
 
 
 def solve_captcha(question):
@@ -46,18 +46,16 @@ def login_with_captcha():
 
             # Fill in the login form
             page.fill('input[name="username"]', "tester")
-            page.fill('input[name="password"]', "574e112a")
+            page.fill('input[name="password"]', os.getenv("L1_PASSWORD"))
             page.fill('input[name="answer"]', answer)
 
             page.click('button[type="submit"]')
 
-            # Wait for and get the h2 title after login
             title_element = page.wait_for_selector("h2")
             title_text = title_element.text_content()
             print(f"Found title: {title_text}")
 
-            # Submit
-            # browser.close()
+            browser.close()
     except Exception as error:
         print("Error logging in:", error)
 
