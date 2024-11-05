@@ -1,4 +1,6 @@
 venv/
 .venv/
-result.md
+node_modules/
+result.txt
 .env
+bun.lockb
