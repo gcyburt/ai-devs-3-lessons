@@ -4,3 +4,5 @@ node_modules/
 result.txt
 .env
 bun.lockb
+lesson-3/input.ts
+payload.json
