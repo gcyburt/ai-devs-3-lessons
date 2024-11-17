@@ -1,4 +1,35 @@
 import axios from 'axios';
+import OpenAI from 'openai';
+
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+
+if (!OPENAI_API_KEY) {
+    throw new Error('OpenAI API key is not set in the environment variables.');
+}
+
+const openai = new OpenAI({
+    apiKey: OPENAI_API_KEY
+});
+
+async function callOpenAI(prompt: string): Promise<string | null> {
+    try {
+
+        const response = await openai.chat.completions.create({
+            model: "gpt-4",
+            messages: [
+                {
+                    role: "user",
+                    content: prompt
+                }
+            ]
+        });
+
+        return response.choices[0].message.content;
+    } catch (error) {
+        console.error(`Error analyzing content:`, error);
+        return null;
+    }
+}
 
 async function callLlama(prompt: string): Promise<string> {
     try {
@@ -44,13 +75,13 @@ async function processCenzura(): Promise<void> {
                         - City name
                         - Age
 
-                        Answer in Polish.
+                        Answer in Polish. Name and Surname should be replaced with CENZURA together. Street name should be replaced with CENZURA together with house number.
 
                         ${fileContent}`;
 
-        const censoredContent = await callLlama(prompt);
-        console.log('Raw content:', fileContent);
-        console.log('Censored content:', censoredContent);
+        const censoredContent = await callOpenAI(prompt);
+
+        console.log(censoredContent);
         fs.writeFileSync('cenzura.txt', censoredContent);
 
     } catch (error) {
