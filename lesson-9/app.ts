@@ -20,7 +20,7 @@ async function analyzeTextFile(content: string): Promise<string | null> {
             messages: [
                 {
                     role: "system",
-                    content: "Analyze the following text and determine if it contains information about people or machines. Respond with a clear indication if such information is found. Result should be 'people' if it contains information about people, 'hardware' for machines, 'none' if it is neither."
+                    content: "Analyze the following text and determine if it contains information about people or machines. Respond with a clear indication if such information is found. Result should be 'people' if it contains information about people, 'hardware' for machines, 'none' if it is neither. Text cannot belong to more than one category. Possible answer is only one of the three - people, machine or none."
                 },
                 {
                     role: "user",
@@ -28,6 +28,7 @@ async function analyzeTextFile(content: string): Promise<string | null> {
                 }
             ]
         });
+        console.log("Result:", response.choices[0].message.content);
         return response.choices[0].message.content;
     } catch (error) {
         console.error(`Error analyzing content:`, error);
@@ -41,12 +42,12 @@ async function transcribeImage(imagePath: string): Promise<void> {
     const base64Image = imageData.toString('base64');
 
     const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: "gpt-4o",
         messages: [
             {
                 role: "user",
                 content: [
-                    { type: "text", text: "Opisz co widzisz na obrazie. Podaj wszystkie szczegóły." },
+                    { type: "text", text: "Otrzymałeś zdjęcie dokumentu naprawczego. Opisz co widzisz na obrazie. Podaj wszystkie szczegóły." },
                     {
                         type: "image_url",
                         image_url: {
@@ -63,6 +64,7 @@ async function transcribeImage(imagePath: string): Promise<void> {
         `_TRANSCRIBED_${path.basename(imagePath, path.extname(imagePath))}.txt`
     );
     fs.writeFileSync(transcribedFilePath, response.choices[0].message.content);
+    console.log(`Transcription from image saved to: ${transcribedFilePath}`);
 }
 
 async function transcribeAudioFile(filePath: string): Promise<void> {
@@ -78,7 +80,7 @@ async function transcribeAudioFile(filePath: string): Promise<void> {
             `_TRANSCRIBED_${path.basename(filePath, path.extname(filePath))}.txt`
         );
         fs.writeFileSync(transcribedFilePath, response.text);
-        console.log(`Transcription saved to: ${transcribedFilePath}`);
+        console.log(`Transcription from audio file saved to: ${transcribedFilePath}`);
 
     } catch (error) {
         console.error(`Error transcribing file ${filePath}:`, error);
@@ -124,13 +126,12 @@ async function saveImagesAsText(): Promise<void> {
     }
 }
 
-async function createSortedPayload(): Promise<{ people: string[], hardware: string[] }> {
+async function createSortedPayload(): Promise<void> {
     const dataFolderPath = path.join(__dirname, 'data');
     const payload = {
         people: [] as string[],
         hardware: [] as string[]
     };
-
     try {
         const files = fs.readdirSync(dataFolderPath);
 
@@ -154,20 +155,13 @@ async function createSortedPayload(): Promise<{ people: string[], hardware: stri
                 payload.hardware.push(file.cleaned);
             }
         }
-
-        return payload;
-
+        console.log(payload);
     } catch (error) {
         console.error('Error creating sorted payload:', error);
-        return {
-            people: [],
-            hardware: []
-        };
     }
 }
 
 // Execute the analysis
-// saveAudioFilesAsText();
-await saveImagesAsText();
-const result = await createSortedPayload();
-console.log(result);
+// await saveAudioFilesAsText();
+// await saveImagesAsText();
+await createSortedPayload();
