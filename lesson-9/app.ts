@@ -16,11 +16,19 @@ async function analyzeTextFile(content: string): Promise<string | null> {
     try {
 
         const response = await openai.chat.completions.create({
-            model: "gpt-4",
+            model: "gpt-4o",
             messages: [
                 {
                     role: "system",
-                    content: "Analyze the following text and determine if it contains information about people or machines. Respond with a clear indication if such information is found. Result should be 'people' if it contains information about people, 'hardware' for machines, 'none' if it is neither. Text cannot belong to more than one category. Possible answer is only one of the three - people, machine or none."
+                    content: `Zdobyliśmy dostęp do danych z fabryki, są to raporty dzienne kilku działających tam oddziałów.
+                    Część z nich to zwykłe raporty techniczne, a część to raporty związane z bezpieczeństwem.
+                    Pozyskane dane są w różnych formatach i nie wszystkie zawierają użyteczne dane.
+                    Odpowiedz jasnym wskazaniem, czy takie informacje zostały znalezione.
+                    Wynik powinien być 'people' jeśli zawiera informacje o schwytanych ludziach lub o śladach ich obecności,
+                    'hardware' jesli dokument jest o naprawionych usterkach hardwarowych, 'none' jeśli nie jest żadnym z powyższych.
+                    Tekst nie może należeć do więcej niż jednej kategorii. Możliwa odpowiedź to tylko jedna z trzech - people, machine lub none.
+                    
+                    PAMIĘTAJ: dokument moze być nieistotny i nie zawierający żadnej użytecznej informacji. Wtedy odpowiedz 'none'.`
                 },
                 {
                     role: "user",
@@ -61,7 +69,7 @@ async function transcribeImage(imagePath: string): Promise<void> {
 
     const transcribedFilePath = path.join(
         path.dirname(imagePath),
-        `_TRANSCRIBED_${path.basename(imagePath, path.extname(imagePath))}.txt`
+        `${path.extname(imagePath)}_TRANSCRIBED_${path.basename(imagePath, path.extname(imagePath))}.txt`
     );
     fs.writeFileSync(transcribedFilePath, response.choices[0].message.content);
     console.log(`Transcription from image saved to: ${transcribedFilePath}`);
@@ -77,7 +85,7 @@ async function transcribeAudioFile(filePath: string): Promise<void> {
         // Save transcription to a file with _TRANSCRIBED prefix
         const transcribedFilePath = path.join(
             path.dirname(filePath),
-            `_TRANSCRIBED_${path.basename(filePath, path.extname(filePath))}.txt`
+            `${path.extname(filePath)}_TRANSCRIBED_${path.basename(filePath, path.extname(filePath))}.txt`
         );
         fs.writeFileSync(transcribedFilePath, response.text);
         console.log(`Transcription from audio file saved to: ${transcribedFilePath}`);
@@ -138,21 +146,23 @@ async function createSortedPayload(): Promise<void> {
         // Filter and clean filenames
         const cleanedFiles = files.map(file => ({
             original: file,
-            cleaned: file.replace(/^_TRANSCRIBED_/, '') // Remove TRANSCRIBED prefix if present
+            cleaned: file.replace(/.*TRANSCRIBED_/, ''), // Remove everything before and including TRANSCRIBED_
+            extension: file.split('_TRANSCRIBED_')[0]
         }))
             .sort((a, b) => a.cleaned.localeCompare(b.cleaned)); // Sort alphabetically by cleaned names
 
         // Categorize files
         for (const file of cleanedFiles.filter(f => path.extname(f.original).toLowerCase() === '.txt')) {
             const filePath = path.join(dataFolderPath, file.original);
-            console.log(`Analyzing ${filePath}`);
             const fileContent = fs.readFileSync(filePath, 'utf-8');
             const category = await analyzeTextFile(fileContent);
 
+            console.log(category, fileContent);
+
             if (category === 'people') {
-                payload.people.push(file.cleaned);
+                payload.people.push(file.cleaned.replace('.txt', file.extension));
             } else if (category === 'hardware') {
-                payload.hardware.push(file.cleaned);
+                payload.hardware.push(file.cleaned.replace('.txt', file.extension));
             }
         }
         console.log(payload);
