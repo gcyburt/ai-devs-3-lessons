@@ -1,4 +1,3 @@
-import axios from 'axios';
 import OpenAI from 'openai';
 import fs from 'fs';
 import path from 'path';
