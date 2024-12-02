@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as readline from 'readline';
-
+import OpenAIService from './OpenAIService';
 // Define input files
 const correctFile = './lab_data/correct.txt';
 const incorrectFile = './lab_data/incorrect.txt';
@@ -75,3 +75,5 @@ writeStream.on('finish', () => {
 });
 
 writeStream.end();
+
+const openai = new OpenAIService();
