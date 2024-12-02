@@ -3,7 +3,8 @@
   "module": "lesson-2/app.ts",
   "type": "module",
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "@types/express": "^5.0.0"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
@@ -12,6 +13,8 @@
     "@qdrant/js-client-rest": "^1.12.0",
     "axios": "^1.7.7",
     "cheerio": "^1.0.0",
+    "express": "^4.21.1",
+    "jimp": "^1.6.0",
     "neo4j-driver": "^5.27.0",
     "openai": "^4.72.0",
     "uuid": "^11.0.3"
